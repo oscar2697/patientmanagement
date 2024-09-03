@@ -7,9 +7,9 @@ import { Form } from "@/components/ui/form"
 import CustomFormField from "../CustomFormField"
 import SubmitButton from "../SubmitButton"
 import { useState } from "react"
-import { UserFormValidation } from "../../../lib/validation"
+import { UserFormValidation } from "@/lib/validation"
 import { useRouter } from "next/navigation"
-import { createUser } from "../../../lib/actions/patient.actions"
+import { createUser } from "@/lib/actions/patient.actions"
 import "react-phone-number-input/style.css";
 
 export enum FormFieldTypes {
