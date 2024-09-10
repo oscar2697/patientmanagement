@@ -20,18 +20,18 @@ import { Select, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 import { Checkbox } from "./ui/checkbox";
 interface CustomProps {
-    control: Control<any>,
-    fieldType: FormFieldTypes,
-    name: string,
-    label?: string,
-    placeholder?: string,
-    iconSrc?: string,
-    iconAlt?: string,
-    disabled?: boolean,
-    dateFormat?: string,
-    showTimeSelect?: boolean,
-    children?: React.ReactNode,
-    renderSkeleton?: (field: any) => React.ReactNode
+    control: Control<any>;
+    name: string;
+    label?: string;
+    placeholder?: string;
+    iconSrc?: string;
+    iconAlt?: string;
+    disabled?: boolean;
+    dateFormat?: string;
+    showTimeSelect?: boolean;
+    children?: React.ReactNode;
+    renderSkeleton?: (field: any) => React.ReactNode;
+    fieldType: FormFieldTypes
 }
 
 const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {

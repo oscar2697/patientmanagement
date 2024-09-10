@@ -7,13 +7,13 @@ import { Form, FormControl } from "@/components/ui/form"
 import CustomFormField from "../CustomFormField"
 import SubmitButton from "../SubmitButton"
 import { useState } from "react"
-import { UserFormValidation } from "@/lib/validation"
+import { PatientFormValidation } from "@/lib/validation"
 import { useRouter } from "next/navigation"
-import { createUser } from "@/lib/actions/patient.actions"
+import { registerPatient } from "@/lib/actions/patient.actions"
 import "react-phone-number-input/style.css";
 import { FormFieldTypes } from "./PatientForm"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
-import { Doctors, GenderOptions, IdentificationTypes } from "../../../constants"
+import { Doctors, GenderOptions, IdentificationTypes, PatientFormDefaultValues } from "../../../constants"
 import { Label } from "../ui/label"
 import { SelectItem } from "../ui/select"
 import Image from "next/image"
@@ -24,23 +24,42 @@ export function RegisterForm({ user }: { user: User }) {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
 
-    const form = useForm<z.infer<typeof UserFormValidation>>({
-        resolver: zodResolver(UserFormValidation),
+    const form = useForm<z.infer<typeof PatientFormValidation>>({
+        resolver: zodResolver(PatientFormValidation),
         defaultValues: {
+            ...PatientFormDefaultValues,
             name: "",
             email: "",
             phone: "",
         },
     })
 
-    async function onSubmit({ name, email, phone }: z.infer<typeof UserFormValidation>) {
+    const onSubmit = async (values: z.infer<typeof PatientFormValidation>) => {
         setIsLoading(true)
+        let formData
+
+        if (values.identificationDocument && values.identificationDocument?.length > 0) {
+            const blobFile = new Blob([values.identificationDocument[0]], {
+                type: values.identificationDocument[0].type,
+            })
+
+            formData = new FormData()
+            formData.append('blobFile', blobFile)
+            formData.append('fileName', values.identificationDocument[0].name)
+        }
 
         try {
-            const userData = { name, email, phone }
-            const user = await createUser(userData)
+            const patientData = {
+                ...values,
+                userId: user.$id,
+                birthDate: new Date(values.birthDate),
+                identificationDocument: formData
+            }
 
-            if (user) router.push(`/patients/${user.$id}/register`)
+            // @ts-ignore
+            const patient = await registerPatient(patientData)
+
+            if (patient) router.push(`/patients/${user.$id}/new-appointment`)
         } catch (error) {
             console.log(error)
         }
@@ -95,7 +114,7 @@ export function RegisterForm({ user }: { user: User }) {
                     <CustomFormField
                         fieldType={FormFieldTypes.DATE_PICKER}
                         control={form.control}
-                        name="birthdate"
+                        name="birthDate"
                         label="Date of Birth"
                     />
 
@@ -137,8 +156,8 @@ export function RegisterForm({ user }: { user: User }) {
                     <CustomFormField
                         fieldType={FormFieldTypes.INPUT}
                         control={form.control}
-                        name="ocuppation"
-                        label="Ocuppation"
+                        name="occupation"
+                        label="Occupation"
                         placeholder="Ingeniero de Software"
                     />
                 </div>
@@ -254,8 +273,8 @@ export function RegisterForm({ user }: { user: User }) {
                 <CustomFormField
                     fieldType={FormFieldTypes.SELECT}
                     control={form.control}
-                    name="identifactionType"
-                    label="Identifaction Type"
+                    name="identificationType"
+                    label="Identification Type"
                     placeholder="Select an identification type"
                 >
                     {IdentificationTypes.map((type) => (
@@ -294,25 +313,25 @@ export function RegisterForm({ user }: { user: User }) {
                 <CustomFormField
                     fieldType={FormFieldTypes.CHECKBOX}
                     control={form.control}
-                    name="treatmentConsentment"
+                    name="treatmentConsent"
                     label="I Consent to treatment"
                 />
 
                 <CustomFormField
                     fieldType={FormFieldTypes.CHECKBOX}
                     control={form.control}
-                    name="disclosureConsentment"
+                    name="disclosureConsent"
                     label="I Consent to disclosure information"
                 />
 
                 <CustomFormField
                     fieldType={FormFieldTypes.CHECKBOX}
                     control={form.control}
-                    name="privacyConsentment"
+                    name="privacyConsent"
                     label="I Consent to privacy policy"
                 />
 
-                <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>
+                <SubmitButton isLoading={isLoading}>Save and Continue</SubmitButton>
             </form>
         </Form>
     )
