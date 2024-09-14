@@ -1,9 +1,10 @@
 'use server'
 
 import { ID, Query } from "node-appwrite"
-import { APPOINTMENT_COLLECTION_ID, DATABASE_ID, databases, ENDPOINT } from "../appwrite.config"
+import { APPOINTMENT_COLLECTION_ID, DATABASE_ID, databases } from "../appwrite.config"
 import { parseStringify } from "../utils"
 import { Appointment } from "../../../types/appwrite.types"
+import { revalidatePath } from "next/cache"
 
 export const createAppointment = async (appointment: CreateAppointmentParams) => {
     try {
@@ -68,6 +69,27 @@ export const getRecentAppointmentsList = async () => {
         }
 
         return parseStringify(data)
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export const updateAppointment = async ({appointmentId, userId, appointment, type}: UpdateAppointmentParams) => {
+    try {
+        const updatedAppointment = await databases.updateDocument(
+            DATABASE_ID!,
+            APPOINTMENT_COLLECTION_ID!,
+            appointmentId,
+            appointment
+        )
+
+        if(!updatedAppointment) {
+            throw new Error('Appointment not found')
+        }
+
+        // SMS notification
+        revalidatePath('/admin')
+        return parseStringify(updatedAppointment)
     } catch (error) {
         console.log(error)
     }
